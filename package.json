@@ -4,17 +4,9 @@
   "description": "Lambda SDK for Hellō https://hello.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hellocoop/packages.git"
+    "url": "git+https://github.com/hellocoop/lambda-node.git"
   },
   "homepage": "https://www.hello.dev/docs/sdks/lambda",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": "./dist/index.js"
-  },
-  "files": [
-    "dist/"
-  ],
   "keywords": [
     "lambda",
     "nodejs",
@@ -35,16 +27,15 @@
     "url": "https://github.com/hellocoop/packages/issues"
   },
   "scripts": {
-    "build": "tsc && webpack --mode production",
+    "build": "echo 'Build script not implemented'",
     "bundle": "webpack --mode production",
-    "zip": "npm run build && cd dist && zip -r ../lambda.zip *",
-    "deploy": "echo 'Deploy script not implemented'",
+    "zip": "cd src && zip function.zip index.mjs",
+    "deploy": "npm run zip && aws lambda update-function-code --function-name HelloCoop --zip-file fileb://src/function.zip --publish",
     "dev": "webpack --mode development"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",
     "@types/aws-lambda": "^8.10.134",
-    "aws-lambda": "^1.0.7",
     "typescript": "^5.2.2"
   },
   "engines": {
