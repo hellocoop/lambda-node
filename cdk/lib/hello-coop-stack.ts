@@ -14,7 +14,7 @@ export class HelloCoopStack extends cdk.Stack {
       functionName: 'HelloCoop',
       runtime: lambda.Runtime.NODEJS_20_X, 
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('../src/function.zip'), 
+      code: lambda.Code.fromAsset('../src/lambda.zip'), 
       environment: {
         HELLO_COOKIE_SECRET: crypto.randomBytes(32).toString('hex'),
         // HELLO_CLIENT_ID: 'YOUR_HELLO_CLIENT_ID',
