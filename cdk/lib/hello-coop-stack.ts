@@ -1,6 +1,7 @@
 // HelloCoopStack
 
 import * as cdk from 'aws-cdk-lib';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as crypto from 'crypto';
@@ -20,6 +21,23 @@ export class HelloCoopStack extends cdk.Stack {
         // HELLO_CLIENT_ID: 'YOUR_HELLO_CLIENT_ID',
       },
     });
+
+            
+    // ARN of the target Lambda function you want to invoke
+    // TODO - get the ARN of the target Lambda function
+    const targetLambdaArn = null // 'arn:aws:lambda:region:account-id:function:target-lambda-name';
+
+    if (targetLambdaArn) {
+      // Create a policy statement that grants invoke permission on the target Lambda
+      const policyStatement = new iam.PolicyStatement({
+        actions: ['lambda:InvokeFunction'],
+        resources: [targetLambdaArn],
+      });
+      // Attach the policy statement to the invoking Lambda's execution role
+      helloLambda.role?.attachInlinePolicy(new iam.Policy(this, 'InvokePolicy', {
+        statements: [policyStatement],
+      }));
+    }
 
     const helloLambdaUrl = helloLambda.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE, // Publicly accessible
