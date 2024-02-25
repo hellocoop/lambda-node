@@ -26,14 +26,12 @@
   "bugs": {
     "url": "https://github.com/hellocoop/packages/issues"
   },
-  "scripts": {
-  },
-  "devDependencies": {
-  },
+  "scripts": {},
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "@hellocoop/router": "*"
+    "@hellocoop/router": "*",
+    "dotenv": "^16.4.5"
   }
 }

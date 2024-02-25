@@ -28,18 +28,17 @@
   },
   "scripts": {
     "build": "echo 'Build script not implemented'",
-    "zip": "cd src && zip -q -r function.zip . -i '*.js' -i '*.mjs' -i '*.json'",
+    "zip": "rimraf src/function.zip && cd src && zip -q -r function.zip . -i '*.js' -i '*.json'",
     "deploy": "npm run zip && aws lambda update-function-code --function-name HelloCoop --zip-file fileb://src/function.zip --publish",
     "get-url": "aws lambda get-function-url-config --function-name HelloCoop",
     "tail": "aws logs tail /aws/lambda/HelloCoop --follow",
     "test": "echo 'Error: no test specified' && exit 1",
-    "install" : "cd src && npm install"
+    "install": "cd src && npm install"
   },
   "devDependencies": {
+    "rimraf": "^5.0.5"
   },
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
   }
 }
