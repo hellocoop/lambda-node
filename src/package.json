@@ -32,6 +32,10 @@
   },
   "dependencies": {
     "@hellocoop/router": "*",
+    "cookie": "^0.6.0",
     "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/cookie": "^0.6.0"
   }
 }

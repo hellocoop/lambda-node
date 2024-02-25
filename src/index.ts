@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2, Context } from 'aws-lambda';
 
 import {
   router,
@@ -11,59 +11,91 @@ import {
   Config,
 } from '@hellocoop/router';
 
+import { serialize } from 'cookie'
 
-const convertToHelloRequest = (req: any): HelloRequest => {
-  console.log(isConfigured);
+// Load environment variables
+const { CLIENT_ID, HELLO_COOKIE_SECRET } = process.env;
+// Load configuration
+const config: Config = require('./hello.config.js')
+if (!isConfigured)
+  configure(config)
+
+const convertToHelloRequest = (event: APIGatewayProxyEventV2 ): HelloRequest => {
+  const { headers, cookies, queryStringParameters, requestContext } = event
+  let auth: any = undefined
   return {
-    headers: () => req.headers,
-    query: req.query,
-    path: req.routeOptions.url,
-    getAuth: () => req.auth,
-    setAuth: (auth) => { req.auth = auth; },
+    headers: () => headers as any,
+    query: queryStringParameters as any,
+    path: requestContext?.http?.path as any,
+    getAuth: () => auth,
+    setAuth: (a) => { auth = a; },
   };
 };
 
-const handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
-  const { CLIENT_ID, HELLO_COOKIE_SECRET } = process.env;
-  console.log('CLIENT_ID', CLIENT_ID);
-  console.log('HELLO_COOKIE_SECRET', HELLO_COOKIE_SECRET);
-  console.log('event', event);
-  const { headers, queryStringParameters, body, isBase64Encoded } = event;
-  const method = event.httpMethod;
-  const path = event.path;
-  console.log('method', method);
-  console.log('path', path);
-  console.log('headers', headers);
-  console.log('queryStringParameters', queryStringParameters);
-  console.log('body', body);
-  console.log('isBase64Encoded', isBase64Encoded);
-  console.log('-----------------');
-  console.log('context', context);
-  const { functionName, functionVersion, memoryLimitInMB, logGroupName, logStreamName } = context;
-  console.log('functionName', functionName);
-  console.log('functionVersion', functionVersion);
-  console.log('memoryLimitInMB', memoryLimitInMB);
-  console.log('logGroupName', logGroupName);
-  console.log('logStreamName', logStreamName);
+const convertToHelloResponse = ( response: APIGatewayProxyStructuredResultV2 ): HelloResponse => {
+  const send = (data: any) => {
+    if (!response?.headers) response.headers = {}
+    response.headers['Content-Type'] = 'text/html'
+    response.body = data
+    return response
+  }
+  return {
+      clearAuth: () => {
+          const { name, value, options } = clearAuthCookieParams()
+          if (!response?.cookies) response.cookies = []
+          response.cookies.push(serialize(name, value, options))
+      },
+      send,
+      json: (data: any) => {
+          if (!response?.headers) response.headers = {}
+          response.headers['Content-Type'] = 'application/json'
+          response.body = JSON.stringify(data)
+      },
+      redirect: (url : string) => {
+        if (!response?.headers) response.headers = {}
+        response.headers['Location'] = url
+        response.statusCode = 302
+      },
+      setCookie: (name: string, value: string, options: any) => {
+        if (!response?.cookies) response.cookies = []
+        response.cookies.push(serialize(name, value, options))
+      },
+      setHeader: (name: string, value: string) => {
+        if (!response?.headers) response.headers = {}
+        response.headers[name] = value
+      },
+      status: ( statusCode: number) => { 
+        response.statusCode = statusCode
+        return { send }
+      },
+  }
+}
 
+
+const handler = async (event: APIGatewayProxyEventV2, context: Context): Promise<APIGatewayProxyStructuredResultV2> => {
+  const { headers, cookies, queryStringParameters, body, isBase64Encoded, requestContext } = event;
+  const method = requestContext?.http?.method;
+  const path = requestContext?.http?.path;
   const content = JSON.stringify({
     HELLO_COOKIE_SECRET,
     CLIENT_ID,
     method,
     path,
     headers,
+    cookies,
     queryStringParameters,
     body,
     isBase64Encoded,
   }, null, 2);
+  console.log('event', content);
 
-  return {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "text/plain"
-    },
-    body: content,
-  };
-};
+  const result: APIGatewayProxyStructuredResultV2 = {
+    statusCode: 200
+  }
+  const helloReq = convertToHelloRequest(event);
+  const helloRes = convertToHelloResponse(result);
+  await router(helloReq, helloRes)
+  return result
+}
 
 export { handler };
