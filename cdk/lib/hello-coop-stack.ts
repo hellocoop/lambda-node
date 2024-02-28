@@ -6,6 +6,11 @@ import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as crypto from 'crypto';
 
+
+// TODO
+// check function.zip exists
+// set redirect_uri env var if in production
+
 export class HelloCoopStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
